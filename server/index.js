@@ -6,39 +6,26 @@ const url = require('node:url');
 // Create a local server to receive data from
 const server = http.createServer();
 
-
-
-// Listen to the request event
-/*
 server.on('request', (request, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/html' });
-  let html = fs.readFileSync('./views/index.html')
-  console.log(html)
-  res.end(html);
-});
-*/
-
-server.on('request', (request, res) => {
-  let parsedURL = url.parse(request.url, true);
-  let parsedURL_Path = parsedURL.pathname;
+  let parsedURL_Path = url.parse(request.url, true).pathname;
+  let filePath = "";
 
   if (parsedURL_Path === "/"){
-      res.writeHead(200, { 'Content-Type': 'text/html'});
-      let html = fs.readFileSync('./views/index.html')
-      res.end(html);
-  } else if (parsedURL_Path === "/about"){
-      res.writeHead(200, { 'Content-Type': 'text/html'});
-      let html = fs.readFileSync('./views/about.html')
-      res.end(html);
-  } else if (parsedURL_Path === "/contact"){
-      res.writeHead(200, { 'Content-Type': 'text/html'});
-      let html = fs.readFileSync('./views/contact-me.html')
-      res.end(html);
-  }else {
-      res.writeHead(200, { 'Content-Type': 'text/html'});
-      let html = fs.readFileSync('./views/404.html')
-      res.end(html);
+    filePath = "./views/index.html"
+  }else{
+    filePath = "./views".concat(parsedURL_Path).concat(".html")
   }
-});
+  fs.readFile(filePath, (err, data) => {
+    if (err) {
+      fs.readFile("./views/404.html", (err404, notFoundData) => {
+        res.writeHead(404, { 'Content-Type': 'text/html'});
+        res.end(err404 ? 'Not Found' : notFoundData)
+      });
+    }else{
+      res.writeHead(200, { 'Content-Type': 'text/html'});
+      res.end(data);
+    }
+  })
+  });
 
 server.listen(8080);
